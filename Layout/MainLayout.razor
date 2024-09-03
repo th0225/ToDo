@@ -1,16 +1,81 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+@using ToDo.Models;
 
-        <article class="content px-4">
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<MudThemeProvider @bind-IsDarkMode=@_systemData.DarkMode
+                  Theme="@CustomTheme" />
+<MudPopoverProvider />
+
+<MudLayout>
+    <MudAppBar Dense=true Color="Color.Inherit">
+        <MudToggleIconButton Toggled=@_systemData.DarkMode
+                             Icon="@Icons.Material.Outlined.DarkMode"
+                             Title="Switch to Dark Theme"
+                             ToggledIcon="@Icons.Material.Outlined.LightMode"
+                             ToggledTitle="Switch to Light Theme"
+                             ToggledColor="Color.Inherit"
+                             ToggledChanged="OnThemeChange"/>
+    </MudAppBar>
+
+    <MudMainContent Class="mt-4">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    // 系統資料
+    private SystemData _systemData = SystemData.Instance;
+
+    // 元件初始化
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _systemData.DarkMode =
+                await localStorage.GetItemAsync<bool>("darkMode");
+        }
+        catch
+        {
+            _systemData.DarkMode = true;
+        }
+    }
+
+    // 自訂主題顏色
+    private readonly MudTheme CustomTheme = new()
+    {
+        // 深色主題
+        PaletteDark = new PaletteDark()
+        {
+            Primary = Colors.Blue.Lighten1,
+            Secondary = Colors.Yellow.Lighten1
+        },
+        // 淺色主題
+        PaletteLight = new PaletteLight()
+        {
+            Primary = Colors.Blue.Darken2,
+            Secondary = Colors.Yellow.Darken3,
+            AppbarBackground = Colors.Blue.Lighten1
+        },
+        // 字體
+        Typography = new Typography()
+        {
+            Default = new Default()
+            {
+                FontFamily = new[] {
+                    "iansui", "Roboto", "Helvetica", "Arial", "sans-serif"
+                }
+            }
+        }
+    };
+
+    // 切換主題
+    private async Task OnThemeChange(bool toggled)
+    {
+        _systemData.DarkMode = toggled;
+        await localStorage.SetItemAsync("darkMode", _systemData.DarkMode);
+    }
+}
