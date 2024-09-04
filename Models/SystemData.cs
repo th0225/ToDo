@@ -25,7 +25,7 @@ public class SystemData
     #endregion
 
     // App名稱
-    public string AppName { get; private set; } = "ToDo";
+    public string AppName { get; set; } = "ToDo";
     // 版本號碼
     public string Version { get; set; } = "0.1.0";
     // 啟用深色主題

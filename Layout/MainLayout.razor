@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-@using ToDo.Models;
+@using ToDo.Models
 
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
@@ -10,6 +10,7 @@
 
 <MudLayout>
     <MudAppBar Dense=true Color="Color.Inherit">
+        <MudSpacer/>
         <MudToggleIconButton Toggled=@_systemData.DarkMode
                              Icon="@Icons.Material.Outlined.DarkMode"
                              Title="Switch to Dark Theme"
@@ -17,6 +18,10 @@
                              ToggledTitle="Switch to Light Theme"
                              ToggledColor="Color.Inherit"
                              ToggledChanged="OnThemeChange"/>
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub"
+                       Color="Color.Secondary"
+                       arial-label="github"/>
+
     </MudAppBar>
 
     <MudMainContent Class="mt-4">
@@ -35,11 +40,13 @@
     {
         try
         {
+            // 從local storage讀取主題設定
             _systemData.DarkMode =
                 await localStorage.GetItemAsync<bool>("darkMode");
         }
         catch
         {
+            // 預設為深色主題
             _systemData.DarkMode = true;
         }
     }
@@ -50,15 +57,20 @@
         // 深色主題
         PaletteDark = new PaletteDark()
         {
-            Primary = Colors.Blue.Lighten1,
-            Secondary = Colors.Yellow.Lighten1
+            // 主色
+            Primary = Colors.Orange.Lighten2,
+            // 副色
+            Secondary = Colors.Pink.Lighten2
         },
         // 淺色主題
         PaletteLight = new PaletteLight()
         {
-            Primary = Colors.Blue.Darken2,
-            Secondary = Colors.Yellow.Darken3,
-            AppbarBackground = Colors.Blue.Lighten1
+            // 主色
+            Primary = Colors.Orange.Lighten2,
+            // 副色
+            Secondary = Colors.Pink.Lighten2,
+            // 背景顏色
+            AppbarBackground = Colors.Orange.Lighten5
         },
         // 字體
         Typography = new Typography()
@@ -75,7 +87,9 @@
     // 切換主題
     private async Task OnThemeChange(bool toggled)
     {
+        // 取得主題狀態
         _systemData.DarkMode = toggled;
+        // 儲存主題至local storage
         await localStorage.SetItemAsync("darkMode", _systemData.DarkMode);
     }
 }

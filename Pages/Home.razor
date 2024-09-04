@@ -1,7 +1,28 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+@using ToDo.Models
 
-<h1>Hello, world!</h1>
+<PageTitle>ToDo</PageTitle>
 
-Welcome to your new app.
+<MudStack Row=true>
+    <MudTextField @bind-Value=todoContent
+                  Label="Todo..."
+                  Variant="Variant.Outlined"/>
+    <MudIconButton Icon="@Icons.Material.Filled.Send"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Large"/>
+</MudStack>
+
+<MudCard Outlined=true Class="mt-4">
+
+</MudCard>
+
+<MudCard Outlined=true Class="mt-4">
+
+</MudCard>
+
+@code {
+    private ToDoData _toDoData = new();
+    private string todoContent { get; set;}
+}
