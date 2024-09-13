@@ -2,27 +2,130 @@
 
 @using ToDo.Models
 
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
 <PageTitle>ToDo</PageTitle>
 
 <MudStack Row=true>
     <MudTextField @bind-Value=todoContent
                   Label="Todo..."
-                  Variant="Variant.Outlined"/>
-    <MudIconButton Icon="@Icons.Material.Filled.Send"
+                  Variant="Variant.Outlined"
+                  @onkeydown="@OnKeyDown"
+                  Immediate="true"/>
+    <MudIconButton Class="my-2"
+                   Icon="@Icons.Material.Filled.Send"
                    Variant="Variant.Filled"
                    Color="Color.Primary"
-                   Size="Size.Large"/>
+                   Size="Size.Large"
+                   OnClick="@((e) => OnSendDataButtonClicked())"/>
 </MudStack>
 
 <MudCard Outlined=true Class="mt-4">
-
+    <MudText Class="ma-2">Undone</MudText>
+    @foreach (ToDoData data in _allToDoDatas.AllDatas)
+    {
+        @if (!@data.IsDone)
+        {
+            <MudStack Row=true>
+                <MudCheckBox id="@data.ID"
+                            @bind-Value="@data.IsDone"
+                            Label="@data.Content"
+                            Color="Color.Primary"
+                            @oninput="@((e) => OnTodoStatusChanged(e, @data.ID))"/>
+            </MudStack>
+        }
+    }
 </MudCard>
 
 <MudCard Outlined=true Class="mt-4">
-
+    <MudText Class="ma-2">Done</MudText>
+    @foreach (ToDoData data in _allToDoDatas.AllDatas)
+    {
+        @if (@data.IsDone)
+        {
+            <MudStack Row=true>
+                <MudCheckBox id="@data.ID"
+                            @bind-Value="@data.IsDone"
+                            Label="@data.Content"
+                            Color="Color.Primary"
+                            @oninput="@((e) => OnTodoStatusChanged(e, @data.ID))"/>
+            </MudStack>
+        }
+    }
 </MudCard>
 
 @code {
-    private ToDoData _toDoData = new();
-    private string todoContent { get; set;}
+    // 輸入的todo資料
+    private string todoContent { get; set; } = string.Empty;
+    private AllToDoDatas _allToDoDatas = AllToDoDatas.Instance;
+
+    // 元件初始化
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // 從local storage取得資料
+            List<ToDoData> datas =
+                await localStorage.GetItemAsync<List<ToDoData>>("todos");
+            _allToDoDatas.AllDatas.AddRange(datas);
+        }
+        catch
+        {
+            _allToDoDatas.AllDatas.Clear();
+        }
+
+    }
+
+    // 按下傳送資料按鈕
+    private async Task OnSendDataButtonClicked()
+    {
+        await SaveDataToLocalStorage();
+    }
+
+    // 按下enter鍵
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Console.WriteLine(todoContent);
+            SaveDataToLocalStorage();
+        }
+    }
+
+    // 儲存資料至local storage
+    private async Task SaveDataToLocalStorage()
+    {
+        // 建立ToDo物件
+        ToDoData _todoData = new();
+        // 儲存ID
+        _todoData.ID = Guid.NewGuid().ToString("N");
+        // 儲存內容
+        _todoData.Content = todoContent;
+        // 儲存狀態
+        _todoData.IsDone = false;
+        // 儲存未完成資料
+        _allToDoDatas.AllDatas.Add(_todoData);
+        // 清除local storage資料
+        await localStorage.RemoveItemAsync("todos");
+        // 儲存至local storage
+        await localStorage.SetItemAsync("todos", _allToDoDatas.AllDatas);
+
+        // 延遲
+        await Task.Delay(100);
+        // 清除內容
+        todoContent = "";
+        // 通知元件狀態已變更
+        StateHasChanged();
+    }
+
+    
+    private void OnTodoStatusChanged(ChangeEventArgs e, string id)
+    {
+        int index = _allToDoDatas.AllDatas.FindIndex(x => x.ID == id);
+        _allToDoDatas.AllDatas[index].IsDone = (bool)e.Value;
+        // 清除local storage資料
+        localStorage.RemoveItemAsync("todos");
+        // 儲存至local storage
+        localStorage.SetItemAsync("todos", _allToDoDatas.AllDatas);
+    }
 }
