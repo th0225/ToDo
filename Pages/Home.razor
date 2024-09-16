@@ -65,9 +65,12 @@
         try
         {
             // 從local storage取得資料
-            List<ToDoData> datas =
+            List<ToDoData>? datas =
                 await localStorage.GetItemAsync<List<ToDoData>>("todos");
-            _allToDoDatas.AllDatas.AddRange(datas);
+            if (datas != null)
+            {
+                _allToDoDatas.AllDatas.AddRange(datas);
+            }
         }
         catch
         {
@@ -79,17 +82,39 @@
     // 按下傳送資料按鈕
     private async Task OnSendDataButtonClicked()
     {
-        await SaveDataToLocalStorage();
+        //await SaveDataToLocalStorage();
+        await SaveData();
     }
 
     // 按下enter鍵
-    private void OnKeyDown(KeyboardEventArgs e)
+    private async Task OnKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            Console.WriteLine(todoContent);
-            SaveDataToLocalStorage();
+            //await SaveDataToLocalStorage();
+            await SaveData();
         }
+    }
+
+    private async Task SaveData()
+    {
+        // 建立ToDo物件
+        ToDoData _todoData = new();
+        // 儲存ID
+        _todoData.ID = Guid.NewGuid().ToString("N");
+        // 儲存內容
+        _todoData.Content = todoContent;
+        // 儲存狀態
+        _todoData.IsDone = false;
+        // 儲存未完成資料
+        _allToDoDatas.AllDatas.Add(_todoData);
+
+        // 延遲
+        await Task.Delay(100);
+        // 清除內容
+        todoContent = string.Empty;
+        // 通知元件狀態已變更
+        StateHasChanged();
     }
 
     // 儲存資料至local storage
@@ -121,11 +146,13 @@
     
     private void OnTodoStatusChanged(ChangeEventArgs e, string id)
     {
+        // 取得項目ID
         int index = _allToDoDatas.AllDatas.FindIndex(x => x.ID == id);
-        _allToDoDatas.AllDatas[index].IsDone = (bool)e.Value;
+        // 根據ID儲存該項目的狀態
+        _allToDoDatas.AllDatas[index].IsDone = Convert.ToBoolean(e.Value);
         // 清除local storage資料
-        localStorage.RemoveItemAsync("todos");
+        //localStorage.RemoveItemAsync("todos");
         // 儲存至local storage
-        localStorage.SetItemAsync("todos", _allToDoDatas.AllDatas);
+        //localStorage.SetItemAsync("todos", _allToDoDatas.AllDatas);
     }
 }

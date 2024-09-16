@@ -2,11 +2,12 @@ namespace ToDo.Models;
 
 public class ToDoData
 {
-    public string ID { get; set;}
+    // ID
+    public string? ID { get; set;} = string.Empty;
     // 內容
-    public string Content { get; set; }
+    public string? Content { get; set; } = string.Empty;
     // 已完成
-    public bool IsDone { get; set; }
+    public bool IsDone { get; set; } = false;
 }
 
 public class AllToDoDatas
@@ -33,7 +34,6 @@ public class AllToDoDatas
     private AllToDoDatas() { }
     #endregion
 
-    // 已完成資料
-    public List<ToDoData> AllDatas { get; set; } = new();
-    // 未完成資料
+    // 所有資料
+    public List<ToDoData> AllDatas { get; set; } = [];
 }
